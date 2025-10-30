@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  app:
+    container_name: webporto-app
+    build: .
+    ports:
+        - "3001:3000"
+    environment:
+      # variabel environment dari aplikasi
+        NODE_MODE: "production"
+        PORT: ${PORT}
+        JWT_SECRET: ${JWT_SECRET}
+        DATABASE_URL: ${DATABASE_URL_DOCKER}
+    depends_on:
+        - db
+    restart: unless-stopped
+    # volumes:
+    #     - .:/app/webporto-be
+    #     - /app/webporto-be/node_modules
+
+
+  db:
+    image: postgres:15-alpine
+    container_name: webporto-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+volumes:
+  db-data:
+
+networks:
+  default:
+    name: webporto-net

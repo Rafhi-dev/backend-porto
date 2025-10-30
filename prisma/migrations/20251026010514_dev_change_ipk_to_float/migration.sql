@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "pendidikan" ALTER COLUMN "ipk" SET DATA TYPE DOUBLE PRECISION;

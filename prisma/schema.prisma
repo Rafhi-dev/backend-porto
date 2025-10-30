@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../prisma/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id        Int       @id @default(autoincrement())
+  nama      String
+  username  String    @unique @default(uuid())
+  email     String    @unique
+  password  String
+  createAt  DateTime  @default(now())
+  deletedAt DateTime?
+}
+
+model hero {
+  id       Int     @id @default(autoincrement())
+  title    String
+  subTitle String
+  aktif    Boolean @default(false)
+}
+
+model about {
+  id      Int     @id @default(autoincrement())
+  tentang String
+  foto    String
+  aktif   Boolean @default(false)
+
+  pedidikan pendidikan[]
+}
+
+model pendidikan {
+  id      Int    @id @default(autoincrement())
+  sekolah String
+  jurusan String
+  ipk     Float
+
+  about   about @relation(fields: [aboutId], references: [id])
+  aboutId Int
+}
+
+model pengalaman {
+  id            Int       @id @default(autoincrement())
+  jabatan       String
+  perushaan     String
+  tahun_mulai   String
+  tahun_selesai String
+  aktif         Boolean   @default(false)
+  jobdesk       jobdesk[]
+}
+
+model jobdesk {
+  id        Int    @id @default(autoincrement())
+  deskripsi String
+
+  pengalamanId Int
+  pengalaman   pengalaman @relation(fields: [pengalamanId], references: [id])
+}
+
+model skill {
+  id        Int    @id @default(autoincrement())
+  icon      String
+  namaSkill String
+}
+
+model proyek {
+  id        Int     @id @default(autoincrement())
+  gambar    String
+  deskripsi String
+  urlProf   String?
+  status    String?
+}
+
+model sosialMedia {
+  id     Int    @id @default(autoincrement())
+  sosmed sosmed
+  url    String
+}
+
+enum sosmed {
+  facebook
+  linkedin
+  instagram
+  thread
+  github
+  fiverr
+  fastwork
+}
