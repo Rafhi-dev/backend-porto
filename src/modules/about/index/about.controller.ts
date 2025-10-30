@@ -1,16 +1,24 @@
 import type { Request, Response } from "express";
 import aboutService, { type Iabout } from "./about.services.js";
-import z, { number, ZodError } from "zod";
+import z, { ZodError } from "zod";
+import redis from "../../../config/redis.js";
 
 class about {
-  static async index(_: any, res: Response) {
+  static async index(req: any, res: Response) {
     try {
-      const data = await aboutService.index();
-      if (data.length < 1) {
-        return res.status(404).json({ pesan: "Data Kosong" });
-      }
 
-      res.status(200).json({ succes: true, data: data });
+      const indexRedis = await redis.get("about")
+      if (!indexRedis) {
+        const data = await aboutService.index();
+        if (data.length < 1) {
+          return res.status(404).json({ pesan: "Data Kosong" });
+        }
+
+        await redis.set("about", JSON.stringify(data))
+        return res.status(200).json({ succes: true, data: data });
+      }
+      const result = JSON.parse(indexRedis)
+      res.status(200).json({ succes: true, result });
     } catch (error: unknown) {
       error instanceof Error
         ? res.status(400).json({ pesan: error.message })
@@ -76,20 +84,20 @@ class about {
     }
   }
 
-  static async delete(req: Request, res: Response){
+  static async delete(req: Request, res: Response) {
     try {
       const id = Number(req.params.id)
       if (isNaN(id)) {
-        res.status(400).json({pesan: "data invalid"})
+        res.status(400).json({ pesan: "data invalid" })
       }
 
       const cekData = await aboutService.show(id)
       if (!cekData) {
-        res.status(404).json({pesan: "data not found"})
+        res.status(404).json({ pesan: "data not found" })
       }
 
       await aboutService.delete(id)
-      res.status(200).json({success: true, pesan: "data terhapus"})
+      res.status(200).json({ success: true, pesan: "data terhapus" })
     } catch (error: unknown) {
       error instanceof Error
         ? res.status(400).json({ pesan: error.message })

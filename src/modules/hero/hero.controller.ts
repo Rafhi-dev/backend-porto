@@ -1,16 +1,24 @@
 import type { Request, Response } from "express";
 import heroService from "./hero.services.js";
 import z, { ZodError } from "zod";
+import redis from "../../config/redis.js";
 
 class hero {
-  
-static async index(req: Request, res: Response) {
+  static async index(req: Request, res: Response) {
     try {
-      const data = await heroService.index();
-      if (data.length === 0) {
-        return res.status(404).json({pesan: "data not found"})
+       
+      const indexRedis = await redis.get("hero");
+      if (!indexRedis) {
+       const data = await heroService.index();
+        if (data.length === 0) {
+          return res.status(404).json({ pesan: "data not found" });
+        }
+        await redis.set("hero", JSON.stringify(data));
+        return res.status(200).json({ success: true, data: data });
       }
-      res.status(200).json({data})
+
+      const result = JSON.parse(indexRedis)
+      res.status(200).json({result});
     } catch (err: unknown) {
       err instanceof Error
         ? res.status(400).json({ error: err.message })
@@ -18,7 +26,7 @@ static async index(req: Request, res: Response) {
     }
   }
 
- static async show(req: Request, res: Response) {
+  static async show(req: Request, res: Response) {
     try {
       const id = Number(req.params.id);
       if (isNaN(id)) {
@@ -33,7 +41,7 @@ static async index(req: Request, res: Response) {
     }
   }
 
- static async create(req: Request, res: Response) {
+  static async create(req: Request, res: Response) {
     try {
       const validasi = z.object({
         title: z.string().min(1, "tidak boleh kosng"),
@@ -42,7 +50,7 @@ static async index(req: Request, res: Response) {
 
       const data = validasi.parse(req.body);
       const result = await heroService.create({ data });
-      res.status(200).json({success: true, result})
+      res.status(200).json({ success: true, result });
     } catch (err: unknown) {
       err instanceof ZodError
         ? res.status(400).json({ error: err.issues })
@@ -50,40 +58,40 @@ static async index(req: Request, res: Response) {
     }
   }
 
-  static async edit(req: Request, res: Response){
+  static async edit(req: Request, res: Response) {
     try {
-        const validasi = z.object({
+      const validasi = z.object({
         title: z.string().min(1, "tidak boleh kosong").optional(),
-        subTitle: z.string().min(1, "tidak boleh kosong").optional()
+        subTitle: z.string().min(1, "tidak boleh kosong").optional(),
       });
-      const id = Number(req.params.id)
+      const id = Number(req.params.id);
       if (isNaN(id)) {
-        return res.status(404).json({pesan: "Data not found"})
+        return res.status(404).json({ pesan: "Data not found" });
       }
 
-      const cekData = await heroService.show({id})
+      const cekData = await heroService.show({ id });
       if (!cekData) {
-        return res.status(404).json({pesan: "data not found"})
+        return res.status(404).json({ pesan: "data not found" });
       }
 
-      const data: object = validasi.parse(req.body)
+      const data: object = validasi.parse(req.body);
 
-      const result = await heroService.edit(id, data)
-      res.status(200).json({success: true, result})
+      const result = await heroService.edit(id, data);
+      res.status(200).json({ success: true, result });
     } catch (err: unknown) {
-        err instanceof ZodError
+      err instanceof ZodError
         ? res.status(400).json({ error: err.issues })
         : res.status(500).json({ error: "unexpected error" });
     }
   }
-  static async delete(req: Request, res: Response){
+  static async delete(req: Request, res: Response) {
     try {
-      const id = Number(req.params.id)
+      const id = Number(req.params.id);
       if (isNaN(id)) {
-        return res.status(400).json({pesan: "invalid ID"})
+        return res.status(400).json({ pesan: "invalid ID" });
       }
-      await heroService.delete({id})
-      res.status(200).json({success: true, pesan: "data terhapus"})
+      await heroService.delete({ id });
+      res.status(200).json({ success: true, pesan: "data terhapus" });
     } catch (err: unknown) {
       err instanceof ZodError
         ? res.status(400).json({ error: err.issues })

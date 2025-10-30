@@ -8,7 +8,7 @@ routerUser.get('/',auth.attemp,auth.roles("rafhi"), user.index)
 
 routerUser.get('/:id',auth.attemp, user.show)
 
-routerUser.post('/',auth.attemp, user.create)
+routerUser.post('/', user.create)
 
 routerUser.patch('/:id',auth.attemp, user.edit)
 
