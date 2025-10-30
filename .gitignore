@@ -34,7 +34,6 @@ prisma/generated/
 **/docker-compose.override.yml
 **/.docker/
 **/Dockerfile.local
-.dockerignore
 # Do NOT ignore main Dockerfile or docker-compose.yml — they’re needed
 # Dockerfile
 # docker-compose.yml
