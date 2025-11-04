@@ -2,25 +2,38 @@ import type { Request, Response } from "express";
 import heroService from "./hero.services.js";
 import z, { ZodError } from "zod";
 import redis from "../../config/redis.js";
+import prisma from "../../config/prisma.js";
 
 class hero {
-  static async index(req: Request, res: Response) {
+  static async index(_: Request, res: Response) {
     try {
-       
-      const indexRedis = await redis.get("hero");
-      if (!indexRedis) {
-       const data = await heroService.index();
+      const data = await heroService.index();
         if (data.length === 0) {
           return res.status(404).json({ pesan: "data not found" });
         }
-        await redis.set("hero", JSON.stringify(data));
-        return res.status(200).json({ success: true, data: data });
-      }
-
-      const result = JSON.parse(indexRedis)
-      res.status(200).json({result});
+      res.status(200).json({result: data});
     } catch (err: unknown) {
       err instanceof Error
+        ? res.status(400).json({ error: err.message })
+        : res.status(500).json({ error: "unexpected error" });
+    }
+  }
+
+  // public API
+  static async aktif(req: Request, res: Response){
+    try {
+      const indexRedis = await redis.get("hero")
+      if (!indexRedis) {
+        const data = await prisma.hero.findFirst({where: {aktif: true}})
+      if(!data) return res.status(404).send({error: "data not found"})
+        await redis.set("hero", data)
+      res.status(200).json({result: data})
+      }
+
+      res.status(200).json({data: indexRedis})
+      
+    } catch (err: unknown) {
+       err instanceof Error
         ? res.status(400).json({ error: err.message })
         : res.status(500).json({ error: "unexpected error" });
     }
@@ -91,6 +104,7 @@ class hero {
         return res.status(400).json({ pesan: "invalid ID" });
       }
       await heroService.delete({ id });
+      await redis.del("about")
       res.status(200).json({ success: true, pesan: "data terhapus" });
     } catch (err: unknown) {
       err instanceof ZodError

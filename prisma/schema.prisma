@@ -28,16 +28,18 @@ model hero {
   id       Int     @id @default(autoincrement())
   title    String
   subTitle String
-  aktif    Boolean @default(false)
+
+  pageIndex pageIndex?
 }
 
 model about {
   id      Int     @id @default(autoincrement())
   tentang String
   foto    String
-  aktif   Boolean @default(false)
 
   pedidikan pendidikan[]
+
+  pageindex pageIndex?
 }
 
 model pendidikan {
@@ -51,13 +53,16 @@ model pendidikan {
 }
 
 model pengalaman {
-  id            Int       @id @default(autoincrement())
+  id            Int     @id @default(autoincrement())
   jabatan       String
   perushaan     String
   tahun_mulai   String
   tahun_selesai String
-  aktif         Boolean   @default(false)
-  jobdesk       jobdesk[]
+
+  pageIndexId Int?
+  pageIndex   pageIndex? @relation(fields: [pageIndexId], references: [id])
+
+  jobdesk jobdesk[]
 }
 
 model jobdesk {
@@ -72,6 +77,9 @@ model skill {
   id        Int    @id @default(autoincrement())
   icon      String
   namaSkill String
+
+  pageIndexId Int?
+  pageIndex   pageIndex? @relation(fields: [pageIndexId], references: [id])
 }
 
 model proyek {
@@ -80,6 +88,9 @@ model proyek {
   deskripsi String
   urlProf   String?
   status    String?
+
+  pageindexId Int?
+  pageIndex   pageIndex? @relation(fields: [pageindexId], references: [id])
 }
 
 model sosialMedia {
@@ -96,4 +107,19 @@ enum sosmed {
   github
   fiverr
   fastwork
+}
+
+model pageIndex {
+  id      Int     @id @default(autoincrement())
+  heroId  Int     @unique
+  aboutId Int     @unique
+  aktif  Boolean @default(false)
+
+  hero hero @relation(fields: [heroId], references: [id])
+
+  about about @relation(fields: [aboutId], references: [id])
+
+  pengalaman pengalaman[]
+  skill      skill[]
+  proyek     proyek[]
 }

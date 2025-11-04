@@ -6,19 +6,12 @@ import redis from "../../../config/redis.js";
 class about {
   static async index(req: any, res: Response) {
     try {
-
-      const indexRedis = await redis.get("about")
-      if (!indexRedis) {
-        const data = await aboutService.index();
+      const data = await aboutService.index();
         if (data.length < 1) {
           return res.status(404).json({ pesan: "Data Kosong" });
         }
 
-        await redis.set("about", JSON.stringify(data))
-        return res.status(200).json({ succes: true, data: data });
-      }
-      const result = JSON.parse(indexRedis)
-      res.status(200).json({ succes: true, result });
+      res.status(200).json({ succes: true, result: data });
     } catch (error: unknown) {
       error instanceof Error
         ? res.status(400).json({ pesan: error.message })
@@ -32,9 +25,12 @@ class about {
       if (isNaN(id)) {
         return res.status(404).json({ pesan: "Data invalid" });
       }
+
       const data = await aboutService.show(id);
       if (!data) return res.status(404).json({ pesan: "Data kosong" });
+      
       res.status(200).json({ success: true, data: data });
+    
     } catch (error: unknown) {
       error instanceof Error
         ? res.status(400).json({ pesan: error.message })
@@ -51,6 +47,7 @@ class about {
 
       const input = validasi.parse(req.body);
       const result = await aboutService.save(input);
+ 
       res.status(200).json({ success: true, data: result });
     } catch (error: unknown) {
       error instanceof ZodError
@@ -77,6 +74,7 @@ class about {
       const data = await aboutService.edit(id, input);
 
       res.status(200).json({ success: true, data: data });
+
     } catch (error: unknown) {
       error instanceof ZodError
         ? res.status(400).json({ pesan: error.issues })

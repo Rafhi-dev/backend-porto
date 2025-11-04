@@ -4,7 +4,7 @@ import auth from "../../../middleware/auth.middleware.js";
 
 const routerUser = Express.Router()
 
-routerUser.get('/',auth.attemp,auth.roles("rafhi"), user.index)
+routerUser.get('/',auth.attemp, user.index)
 
 routerUser.get('/:id',auth.attemp, user.show)
 

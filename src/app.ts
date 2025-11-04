@@ -11,14 +11,46 @@ import skillRoute from "./modules/skillset/skillset.route.js";
 import cors from "cors";
 import helmet from "helmet";
 import projectRoute from "./modules/project/project.route.js";
+import compression from "compression";
+import rateLimit from "express-rate-limit";
+import cookieParser from "cookie-parser"
+import hpp from "hpp"
+import { xss } from "express-xss-sanitizer"
+
 
 const app = Express();
 
+// setup limiter
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  message: "too much request you DUMB ASS",
+  standardHeaders: true,
+  legacyHeaders: false
+})
+
 // Middleware Register
-app.use(morgan("tiny"));
-app.use(cors());
+app.use(limiter)
+
+
+// logging
+app.use(morgan("combined"));
+
+// Secure
+app.use(hpp())
+app.use(xss())
 app.use(helmet());
-app.use(Express.json());
+app.use(cors({
+  origin: `${process.env.FE_URL}`,
+  credentials: true
+}))
+
+// parsing
+app.use(Express.json({limit: "50kb", strict: false}));
+app.use(cookieParser())
+
+// cpmpress semua response
+app.use(compression())
 
 // Route register
 app.use("/login", loginRoute);

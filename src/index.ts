@@ -9,6 +9,7 @@ app.listen(port, async () => {
         await prisma.$connect()
         console.log('DB Connected')
         console.log("server running at port ", port)
+        
     } catch (error) {
         await prisma.$disconnect()
         console.error(error);

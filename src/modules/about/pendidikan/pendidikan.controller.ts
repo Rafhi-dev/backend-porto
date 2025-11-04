@@ -10,7 +10,7 @@ class pendidikan {
       if (data.length === 0) {
         return res.status(404).json({ pesan: "data kosong" });
       }
-      res.status(200).json({ succes: true, data });
+      res.status(200).json({ data });
     } catch (error) {
       error instanceof Error
         ? res.status(400).json({ pesan: error.message })

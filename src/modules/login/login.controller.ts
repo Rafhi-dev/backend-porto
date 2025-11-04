@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import z, { json, ZodError } from "zod";
+import z, { ZodError } from "zod";
 import authService from "./login.services.js";
 import bcrypt from "bcrypt";
 
@@ -14,7 +14,7 @@ class login {
 
       const input = validasi.parse(req.body);
 
-      const secretKeyJWT = process.env.JWT_SECRET || "spard4";
+      const secretKeyJWT = `${process.env.JWT_SECRET}`;
       const cekEmail = await authService.cekEmail(input.email);
       if (!cekEmail)
         return res.status(400).json({ pesan: "email/password salah" });
@@ -38,10 +38,11 @@ class login {
   }
 
   static async revoke(req: Request, res: Response) {
-    // code revoke
+    
     try {
       const data = (req as any).user;
       res.status(200).json({ login: true, data: data });
+          console.log("authot", req.headers.authorization)
     } catch (err: unknown) {
       err instanceof ZodError
         ? res.status(400).json({ error: err.issues })

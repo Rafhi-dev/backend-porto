@@ -1,11 +1,10 @@
-// import { Redis } from "@upstash/redis";
-import dotenv from "dotenv"
-import Redis from "ioredis"
+import { Redis } from "@upstash/redis";
+import "dotenv/config"
+// import Redis from "ioredis"
 
-dotenv.config()
-
-const redis = new (Redis as any)(process.env.UPSTASH_REDIS_TCP_URL, {
-    tls: {}
+const redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN
 })
 
 

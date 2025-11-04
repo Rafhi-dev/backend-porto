@@ -7,16 +7,18 @@ dotenv.config();
 class auth {
   static attemp(req: Request, res: Response, next: NextFunction) {
     try {
-      const header = req.headers.authorization;
+      const header = req.headers.authorization
       if (!header || !header.startsWith("Bearer ")) {
         return res
           .status(401)
-          .json({ pesan: "Authorization header missing or invalid" });
+          .json({ error: "Access Denied" });
       }
 
       const token = header.split(" ")[1];
       if (!token) return res.status(401).json({ pesan: "Token missing" });
-      const secretKeyJWT = process.env.JWT_SECRET || "spard4";
+
+      const secretKeyJWT = `${process.env.JWT_SECRET}`;
+      
       const decode = jwt.verify(token, secretKeyJWT) as JwtPayload;
 
       (req as any).user = decode;
