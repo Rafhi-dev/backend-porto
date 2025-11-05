@@ -16,6 +16,7 @@ import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser"
 import hpp from "hpp"
 import { xss } from "express-xss-sanitizer"
+import pageIndexRoute from "./modules/pageIndex/pageIndex.route.js";
 
 
 const app = Express();
@@ -62,6 +63,7 @@ app.use("/work", expRoute);
 app.use("/jobdesk", jobdeskRoute);
 app.use("/skill", skillRoute);
 app.use("/project", projectRoute);
+app.use("/page", pageIndexRoute)
 
 // index API
 app.get("/", (_: Request, res: Response) => {
