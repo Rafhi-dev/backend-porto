@@ -2,38 +2,42 @@ import type { Request, Response } from "express";
 import heroService from "./hero.services.js";
 import z, { ZodError } from "zod";
 import redis from "../../config/redis.js";
-import prisma from "../../config/prisma.js";
+import { link } from "fs";
 
 class hero {
-  static async index(_: Request, res: Response) {
+  static async index(req: Request, res: Response) {
     try {
-      const data = await heroService.index();
-        if (data.length === 0) {
-          return res.status(404).json({ pesan: "data not found" });
-        }
-      res.status(200).json({result: data});
-    } catch (err: unknown) {
-      err instanceof Error
-        ? res.status(400).json({ error: err.message })
-        : res.status(500).json({ error: "unexpected error" });
-    }
-  }
+      const page = Math.max(Number(req.query.page)) || 1;
+      const limit = Math.max(Number(req.query.limit)) || 10;
+      const search = req.query.search ? String(req.query.search) : "";
 
-  // public API
-  static async aktif(req: Request, res: Response){
-    try {
-      const indexRedis = await redis.get("hero")
-      if (!indexRedis) {
-        const data = await prisma.hero.findFirst({where: {aktif: true}})
-      if(!data) return res.status(404).send({error: "data not found"})
-        await redis.set("hero", data)
-      res.status(200).json({result: data})
+      const skip = (page - 1) * limit;
+
+      const data = await heroService.indexPagination(skip, limit, search);
+
+      const countData = await heroService.index();
+      if (countData.length === 0) {
+        return res.status(404).json({ dataEmpty: true, pesan: "data empty" });
       }
 
-      res.status(200).json({data: indexRedis})
-      
+      const totalPage = Math.ceil(countData.length / limit)
+
+      res.status(200).json({
+        meta: {
+          totalData: countData.length,
+          page: page,
+          limit: limit,
+          totalPage: totalPage,
+        },
+        link: {
+          self: `/hero?page=${page}&limit=${limit}`,
+          next: page < totalPage ? `/hero?page=${page + 1}&limit=${limit}` : null,
+          prev: page > 1 ? `/hero?page=${page - 1}&limit=${limit}` : null,
+        },
+        data: data,
+      });
     } catch (err: unknown) {
-       err instanceof Error
+      err instanceof Error
         ? res.status(400).json({ error: err.message })
         : res.status(500).json({ error: "unexpected error" });
     }
@@ -104,7 +108,7 @@ class hero {
         return res.status(400).json({ pesan: "invalid ID" });
       }
       await heroService.delete({ id });
-      await redis.del("about")
+      await redis.del("about");
       res.status(200).json({ success: true, pesan: "data terhapus" });
     } catch (err: unknown) {
       err instanceof ZodError

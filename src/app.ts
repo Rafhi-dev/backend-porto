@@ -23,7 +23,7 @@ const app = Express();
 
 // setup limiter
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 20 * 60 * 1000,
   limit: 100,
   message: "too much request you DUMB ASS",
   standardHeaders: true,
@@ -42,12 +42,12 @@ app.use(hpp())
 app.use(xss())
 app.use(helmet());
 app.use(cors({
-  origin: `${process.env.FE_URL}`,
+  origin: ['http://localhost:5173/', 'http://localhost:5173/*'],
   credentials: true
 }))
 
 // parsing
-app.use(Express.json({limit: "50kb", strict: false}));
+app.use(Express.json({limit: "50kb"}));
 app.use(cookieParser())
 
 // cpmpress semua response

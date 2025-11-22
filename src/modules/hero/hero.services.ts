@@ -1,3 +1,4 @@
+import { title } from "node:process";
 import prisma from "../../config/prisma.js";
 
 interface Hero {
@@ -18,8 +19,22 @@ interface Iedit {
 }
 
 class heroService {
+  
   static index() {
     return prisma.hero.findMany();
+  }
+
+  static indexPagination(skip: number, limit: number, search: any){
+    return prisma.hero.findMany({
+      skip: skip,
+      take: limit,
+      where: {
+        OR: [
+          {title: {contains: search, mode: "insensitive"}},
+          {subTitle: {contains: search, mode: "insensitive"} }
+        ]
+      }
+    })
   }
 
   static show({ id }: dataId) {

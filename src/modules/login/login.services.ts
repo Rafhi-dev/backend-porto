@@ -8,6 +8,10 @@ class authService{
     static cekUsername(username: string){
         return prisma.users.findUnique({where: {username: username}})
     }
+
+    static cekPassword(email: string){
+        return prisma.users.findUnique({where: {email: email}})
+    }
 }
 
 export default authService
